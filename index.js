@@ -22,7 +22,7 @@ mongoose.connect(process.env.MONGO_URL)
 ;
 
 const corsOptions = {
-    origin:'http://localhost:3000', 
+    origin:'https://bronx-ecommerce.onrender.com', 
     credentials: true,
     optionSuccessStatus: 200,
 };
@@ -48,18 +48,18 @@ app.use('/e-commerce_api/checkout', stripeRoute);
 // DEVELOP STAGE [ON] => process.env.NODE_ENV = 'production'
 // process.env.NODE_ENV = '';
 
-if (process.env.NODE_ENV === 'production'){
-    app.use(express.static(path.resolve(__dirname, "./client/build")));
-    app.use(express.static(path.resolve(__dirname, "./admin/build")));
+// if (process.env.NODE_ENV === 'production'){
+//    app.use(express.static(path.resolve(__dirname, "./client/build")));
+//    app.use(express.static(path.resolve(__dirname, "./admin/build")));
     
-    app.get('/admin', (req, res) => {
-        res.sendFile(path.resolve(__dirname, './admin/build', 'index.html'));
-    });
+//    app.get('/admin', (req, res) => {
+//        res.sendFile(path.resolve(__dirname, './admin/build', 'index.html'));
+//    });
     
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
-    });
-};
+//    app.get('*', (req, res) => {
+//        res.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
+//    });
+// };
 
 app.listen(process.env.PORT || 5000, () => {
     console.log(`Server is running on port ${process.env.PORT || 5000}`);
