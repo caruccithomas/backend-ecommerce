@@ -22,7 +22,8 @@ mongoose.connect(process.env.MONGO_URL)
 ;
 
 const corsOptions = {
-    origin:'https://bronx-ecommerce.onrender.com/', 
+    // origin:'http://localhost:3000',
+    origin:'https://bronx-ecommerce-api.onrender.com', 
     credentials: true,
     optionSuccessStatus: 200,
 };
