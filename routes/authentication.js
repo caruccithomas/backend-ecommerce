@@ -2,15 +2,36 @@ const express = require('express');
 const User = require('../models/User');
 const CryptoJS = require('crypto-js');
 const jwt = require('jsonwebtoken');
+const { verifyToken } = require('./verifyToken');
 
 const router = express.Router();
+  
+// Check if Username exists
+
+router.get('/check-username/:username', async (req,res) => {
+    
+    try {
+        const user = await User.findOne({ username: req.params.username });
+
+        if (user) {
+            res.status(201).send("El usuario ingresado ya existe");
+        } else {
+            res.status(200).send('Usuario creado exitosamente');
+        }
+    } catch (err) {
+        console.dir(err);
+    }
+
+});
 
 // Register
 
 router.post('/register', async (req,res) => {
     const user = await User.findOne({ username: req.body.username }); 
     
-    if (user) return res.status(409).json("El Usuario ingresado ya existe");
+    if (user) {
+        return res.status(409).json("El usuario ingresado ya existe");
+    }
 
     const newUser = new User ({
         username: req.body.username,
@@ -34,36 +55,39 @@ router.post('/register', async (req,res) => {
 
 router.post('/login', async (req,res) => {
 
-    try {
-        const user = await User.findOne({ username: req.body.username });
+        try {
+            const user = await User.findOne({ username: req.body.username });
 
-        if (!user) {
-            return res.status(401).json('El Usuario es incorrecto');
+            if (!user) {
+                return res.status(401).json('El usuario no está registrado');
+            }
+
+            if (req.body.password) {
+                const hashedPassword = CryptoJS.AES.decrypt(user.password, process.env.PASSWORD_SECRET);
+                const originalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
+                const inputPassword = req.body.password;
+
+                if (originalPassword !== inputPassword) {
+                    return res.status(401).json('La contraseña ingresada es incorrecta');
+                }
+            }
+
+            const accessToken = jwt.sign(
+                {
+                    id: user._id,
+                    isAdmin: user.isAdmin,
+                },
+                process.env.JWT_SECRET_KEY,
+                // { expiresIn:'3d' }
+            );
+
+            const { password, ...others } = user._doc;
+            res.status(200).json({ ...others, accessToken });
+        } catch (err) {
+            res.status(500).json(err);
         }
-
-        const hashedPassword = CryptoJS.AES.decrypt(user.password, process.env.PASSWORD_SECRET);
-        const originalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
-        const inputPassword = req.body.password;
-
-        if (originalPassword !== inputPassword) {
-            return res.status(401).json('La Contraseña es incorrecta');
-        }
-
-        const accessToken = jwt.sign(
-            {
-                id: user._id,
-                isAdmin: user.isAdmin,
-            },
-            process.env.JWT_SECRET_KEY,
-            // { expiresIn:'3d' }
-        );
-
-        const { password, ...others } = user._doc;
-        res.status(200).json({ ...others, accessToken });
-    } catch (err) {
-        res.status(500).json(err);
     }
-    
-});
+
+);
 
 module.exports = router;
