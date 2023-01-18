@@ -6,17 +6,17 @@ const { verifyToken } = require('./verifyToken');
 
 const router = express.Router();
   
-// Check if Username exists
+// Check Unique Email
 
-router.get('/check-username/:username', async (req,res) => {
+router.get('/check-email/:email', async (req,res) => {
     
     try {
-        const user = await User.findOne({ username: req.params.username });
+        const email = await User.findOne({ email: req.params.email });
 
-        if (user) {
-            res.status(201).send("El usuario ingresado ya existe");
+        if (email) {
+            res.status(201).send('El correo electrónico ingresado ya existe');
         } else {
-            res.status(200).send('Usuario creado exitosamente');
+            res.status(200).send('Correo electrónico válido para registrarse');
         }
     } catch (err) {
         console.dir(err);
@@ -30,7 +30,7 @@ router.post('/register', async (req,res) => {
     const user = await User.findOne({ username: req.body.username }); 
     
     if (user) {
-        return res.status(409).json("El usuario ingresado ya existe");
+        return res.status(409).json('El usuario ingresado ya existe');
     }
 
     const newUser = new User ({
